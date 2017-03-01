@@ -11,10 +11,12 @@ use Vinelab\NeoEloquent\Relations\HasOne;
 use Vinelab\NeoEloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Collection;
 use Vinelab\NeoEloquent\Relations\OneRelation;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\Builder as IlluminateBuilder;
 use Illuminate\Pagination\Paginator;
 
 class Builder extends IlluminateBuilder {
+    use \Illuminate\Database\Eloquent\Concerns\QueriesRelationships;
 
     /**
      * The loaded models that should be transformed back
@@ -37,8 +39,8 @@ class Builder extends IlluminateBuilder {
      */
     public function find($id, $properties = array('*'))
     {
-      //If the ID is numeric we cast it to int.
-      //otherwise we leave it as it is.
+        //If the ID is numeric we cast it to int.
+        //otherwise we leave it as it is.
         if (is_array($id))
         {
             return $this->findMany(array_map(function($id){return is_numeric($id) ? (int) $id : $id;},$id), $properties);
@@ -691,7 +693,7 @@ class Builder extends IlluminateBuilder {
         $this->$method($relation->getParent(),
             $relation->getRelated(),
             $relatedNode,
-            $relation->getForeignKey(),
+            $relation->getRelationType(),
             $relation->getLocalKey(),
             $relation->getParentLocalKeyValue());
 
@@ -711,6 +713,19 @@ class Builder extends IlluminateBuilder {
         $this->getQuery()->from = $this->getModel()->getTable();
 
         return $this;
+    }
+
+    /**
+     * Get the "has relation" base query instance.
+     *
+     * @param  string  $relation
+     * @return \Illuminate\Database\Eloquent\Relations\Relation
+     */
+    protected function getHasRelationQuery($relation)
+    {
+        return Relation::noConstraints(function () use ($relation) {
+            return $this->getModel()->$relation();
+        });
     }
 
     /**
