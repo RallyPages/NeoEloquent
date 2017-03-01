@@ -198,38 +198,47 @@ class Builder extends IlluminateQueryBuilder {
 
         return $bindings;
     }
-
     /**
-    * Get the count of the total records for the paginator.
-    *
-    * @param  array  $columns
-    * @return int
+     * Get the count of the total records for the paginator.
+     *
+     * @param  array  $columns
+     * @return int
      */
     public function getCountForPagination($columns = ['*'])
     {
-        $this->backupFieldsForCount();
+        $results = $this->runPaginationCountQuery($columns);
 
-        $this->aggregate = ['function' => 'count', 'columns' => $columns];
-
-        $results = $this->get();
-
-        $this->aggregate = null;
-
-        $this->restoreFieldsForCount();
-
+        // Once we have run the pagination count query, we will get the resulting count and
+        // take into account what type of query it was. When there is a group by we will
+        // just return the count of the entire results set since that will be correct.
         if (isset($this->groups)) {
             return count($results);
-        }
+        } elseif (! isset($results[0])) {
+            return 0;
+        } elseif (is_object($results[0])) {
 
-        $row = null;
-        if ($results->offsetExists(0)) {
-                $row = $results->offsetGet(0);
-                $count = $row->offsetGet(0);
-                return $count;
+            if(is_a($results[0], "Everyman\\Neo4j\\Query\\Row")){
+                return (int) $results[0]->offsetGet(0);
+            }
+            return (int) $results[0]->aggregate;
         } else {
-                return 0;
+            return (int) array_change_key_case((array) $results[0])['aggregate'];
         }
     }
+
+    /**
+     * Run a pagination count query.
+     *
+     * @param  array  $columns
+     * @return array
+     */
+    protected function runPaginationCountQuery($columns = ['*'])
+    {
+        return  $this->cloneWithout(['columns', 'orders', 'limit', 'offset'])
+            ->cloneWithoutBindings(['select', 'order'])
+            ->setAggregate('count', $this->withoutSelectAliases($columns))->get();
+    }
+
 
     /**
 	 * Add a basic where clause to the query.
