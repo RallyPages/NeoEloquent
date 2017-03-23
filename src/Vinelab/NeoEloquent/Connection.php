@@ -115,7 +115,7 @@ class Connection extends IlluminateConnection {
      */
     public function getHost()
     {
-        return $this->getConfig('host', $this->defaults['host']);
+        return $this->getConfig('host');
     }
 
     /**
@@ -125,7 +125,7 @@ class Connection extends IlluminateConnection {
      */
     public function getPort()
     {
-        return $this->getConfig('port', $this->defaults['port']);
+        return $this->getConfig('port');
     }
 
     /**
@@ -134,7 +134,7 @@ class Connection extends IlluminateConnection {
      */
     public function getUsername()
     {
-        return $this->getConfig('username', $this->defaults['username']);
+        return $this->getConfig('username');
     }
 
     /**
@@ -143,7 +143,7 @@ class Connection extends IlluminateConnection {
      */
     public function getPassword()
     {
-        return $this->getConfig('password', $this->defaults['password']);
+        return $this->getConfig('password');
     }
 
     /**
@@ -152,7 +152,7 @@ class Connection extends IlluminateConnection {
      */
     public function getSsl()
     {
-        return $this->getConfig('ssl', $this->defaults['ssl']);
+        return $this->getConfig('ssl');
     }
 
     /**
@@ -162,9 +162,9 @@ class Connection extends IlluminateConnection {
      * @param  mixed    $default
      * @return mixed
      */
-    public function getConfig($option, $default = null)
+    public function getConfig($option = null)
     {
-        return array_get($this->config, $option, $default);
+        return array_get($this->config, $option);
     }
 
     /**
