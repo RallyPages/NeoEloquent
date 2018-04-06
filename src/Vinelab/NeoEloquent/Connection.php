@@ -184,7 +184,7 @@ class Connection extends IlluminateConnection {
      * @param  array   $bindings
      * @return array
      */
-    public function select($query, $bindings = array())
+    public function select($query, $bindings = array(), $useReadPdo = true)
     {
         return $this->run($query, $bindings, function(self $me, $query, array $bindings)
         {
@@ -405,7 +405,7 @@ class Connection extends IlluminateConnection {
      *
      * @return void
      */
-    public function rollBack()
+    public function rollBack($toLevel = NULL)
     {
         if ($this->transactions == 1)
         {
